@@ -41,28 +41,37 @@ function! VimtexIndent(lnum) abort " {{{1
     return empty(l:line) ? indent(l:prev_lnum) : indent(a:lnum)
   endif
 
-  " Align on ampersands
-  if s:indent_amps.check(a:lnum, l:line, l:prev_line)
-    return s:indent_amps.indent
-  endif
-
   " Use previous indentation for comments
   if l:line =~# '^\s*%'
     return indent(a:lnum)
   endif
 
+  " Align on ampersands
+  if s:indent_amps.check(a:lnum, l:line, l:prev_line)
+    unsilent echo printf("Z %-40s\n", l:line)
+    return s:indent_amps.indent
+  endif
+
   " Ensure previous line does not start with ampersand
-  let l:prev_lnum = s:get_prev_line(l:prev_lnum,
-        \ get(g:, 'vimtex_indent_on_ampersands', 1))
-  if l:prev_lnum == 0 | return 0 | endif
-  let l:prev_line = substitute(getline(l:prev_lnum), '\\\@<!%.*', '', '')
+  if s:indent_amps.get_continued_indent()
+    let l:ind = s:indent_amps.indent + s:sw
+    unsilent echo printf('X %-40s', l:line)
+  else
+    let l:prev_nonampersand = s:get_prev_line(l:prev_lnum,
+          \ get(g:, 'vimtex_indent_on_ampersands', 1))
+    let l:ind = l:prev_nonampersand == 0 ? 0 : indent(l:prev_nonampersand)
+    unsilent echo printf('Y %-40s', l:line)
+  endif
 
   " Indent environments, delimiters, and tikz
-  let l:ind = indent(l:prev_lnum)
+  unsilent echo l:ind '- '
   let l:ind += s:indent_envs(l:line, l:prev_line)
+  unsilent echo l:ind '- '
   let l:ind += s:indent_delims(l:line, a:lnum, l:prev_line, l:prev_lnum)
+  unsilent echo l:ind "\n"
   let l:ind += s:indent_conditionals(l:line, a:lnum, l:prev_line, l:prev_lnum)
   let l:ind += s:indent_tikz(l:prev_lnum, l:prev_line)
+
   return l:ind
 endfunction
 
@@ -93,22 +102,51 @@ endfunction
 
 let s:indent_amps = {}
 let s:indent_amps.indent = 0
+let s:indent_amps.env = 0
+let s:indent_amps.continued = 0
 let s:indent_amps.re_amp = g:vimtex#re#not_bslash . '\&'
 let s:indent_amps.re_align = '^[ \t\\]*' . s:indent_amps.re_amp
 function! s:indent_amps.check(lnum, cline, pline) abort dict " {{{1
-  if get(g:, 'vimtex_indent_on_ampersands', 1)
-        \ && a:cline =~# self.re_align
-        \ && a:pline =~# self.re_amp
+  if !get(g:, 'vimtex_indent_on_ampersands', 1) | return 0 | endif
 
+  if a:cline =~# self.re_align && a:pline =~# self.re_amp
     let l:pre = strdisplaywidth(strpart(a:pline, 0, match(a:pline, self.re_amp)))
     let l:cur = strdisplaywidth(strpart(a:cline, 0, match(a:cline, self.re_amp)))
     let self.indent = max([indent(a:lnum) - l:cur + l:pre, 0])
 
+    if !self.env
+      let self.env = vimtex#env#is_inside('\w\+')[0]
+    endif
+
     return 1
   endif
 
-  let self.indent = 0
+  if self.env
+    let l:env = vimtex#env#is_inside('\w\+')[0]
+    if l:env != self.env || a:cline =~# '\\end'
+      let self.env = 0
+    endif
+  endif
+
+  if self.env
+    if a:cline =~# self.re_align
+      return 1
+    endif
+  else
+    let self.indent = 0
+  endif
+
   return 0
+endfunction
+
+" }}}1
+function! s:indent_amps.get_continued_indent() abort dict " {{{1
+  if self.env && !self.continued
+    let self.continued = 1
+    return 1
+  else
+    let self.continued = 0
+  endif
 endfunction
 
 " }}}1
