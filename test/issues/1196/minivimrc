@@ -6,6 +6,9 @@ syntax enable
 
 nnoremap q :qall!<cr>
 
+set shiftwidth=2
+set expandtab
+
 silent edit minimal.tex
 
 silent! normal! gg}=}
@@ -14,7 +17,7 @@ let s:result = getline(4,10)
 if s:result == s:expected
   echo "SUCCESS\n"
 else
-  for s:line in ['Expected'] + s:expected + ["\nResult"] + s:result
+  for s:line in ['Result'] + s:result + ["\nExpected"] + s:expected
     echo s:line
   endfor
   echo ''
