@@ -308,8 +308,8 @@ Expect tex:
   \begin{environ*}
     A &= 10\\
       &= \command{
-            something
-          }
+          something
+        }
   \end{environ*}
 
 Given:

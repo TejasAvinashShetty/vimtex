@@ -1,25 +1,22 @@
 \documentclass{minimal}
 \begin{document}
 
-\begin{environ*}
-	A &= 10\\
-	  &= \command{
-	something
-}
-	  &= 5\\
-\end{environ*}
+  \begin{tabular}{cc}
+    \begin{tabular}{c}
+      Cell 1
+    \end{tabular} &
+    \begin{tabular}{c}
+      Cell 2
+    \end{tabular}
+  \end{tabular}
 
-\begin{environ*}
-	A &= 10\\
-	  &= \command{
-	        something
-          }
-	  &= 5\\
-\end{environ*}
-
-\begin{align}
-  &x(
-  y)
-\end{align}
+    \begin{equation}
+      \begin{aligned}
+        1 &
+          & 2 \\
+        3 &
+          & 4 \\
+      \end{aligned}
+    \end{equation}
 
 \end{document}

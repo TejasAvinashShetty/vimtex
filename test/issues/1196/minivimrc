@@ -5,21 +5,19 @@ filetype plugin indent on
 syntax enable
 
 nnoremap q :qall!<cr>
+" let g:vimtex_indent_on_ampersands = 0
 
 set shiftwidth=2
 set expandtab
+set noswapfile
 
 silent edit minimal.tex
 
-silent! normal! gg}=}
-let s:expected = getline(11,18)
-let s:result = getline(4,10)
-if s:result == s:expected
-  echo "SUCCESS\n"
-else
-  for s:line in ['Result'] + s:result + ["\nExpected"] + s:expected
-    echo s:line
-  endfor
-  echo ''
-endif
+silent! normal! gg=G
+
+for s:line in getline(4, line('$')-2)
+  echo s:line
+endfor
+echo ''
+
 quitall!
