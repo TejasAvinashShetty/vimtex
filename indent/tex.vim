@@ -128,7 +128,10 @@ function! s:indent_amps.check(lnum, cline, plnum, pline) abort dict " {{{1
 
   " Check if we should indent directly
   if self.env && a:cline =~# self.re_align
-    return [self.indent, 1, a:plnum, a:pline]
+    let l:ind_diff =
+          \   strdisplaywidth(strpart(a:cline, 0, match(a:cline, self.re_amp)))
+          \ - strdisplaywidth(strpart(a:cline, 0, match(a:cline, '\S')))
+    return [self.indent - l:ind_diff, 1, a:plnum, a:pline]
   endif
 
   " Get indent (either continued or from previous nonamped line
