@@ -295,10 +295,11 @@ Execute (let g:vimtex_indent_on_ampersands = 1):
 
 Given tex (Format: ampersands 4):
   \begin{environ*}
-    A &= 10\\
-      &= \command{
+    A &= 10
+      \\&= \command{
     something
   }
+  \\&= 20
   \end{environ*}
 
 Do:
@@ -306,10 +307,11 @@ Do:
 
 Expect tex:
   \begin{environ*}
-    A &= 10\\
-      &= \command{
+    A &= 10
+    \\&= \command{
           something
         }
+    \\&= 20
   \end{environ*}
 
 Given:
